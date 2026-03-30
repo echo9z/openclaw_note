@@ -4,12 +4,12 @@
     "type": "split",
     "children": [
       {
-        "id": "a8019a7321451891",
+        "id": "19d6d3798b373b0c",
         "type": "tabs",
-        "dimension": 79.59183673469387,
+        "dimension": 69.20236336779911,
         "children": [
           {
-            "id": "02c3566f4d7a7ea6",
+            "id": "79b33ab55ae47eda",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -20,18 +20,17 @@
               },
               "icon": "lucide-file",
               "title": "README"
-            },
-            "group": "d4129a4af076829b"
+            }
           }
         ]
       },
       {
-        "id": "44a951152dd435e6",
+        "id": "7b7d42d84d840fc7",
         "type": "tabs",
-        "dimension": 20.408163265306122,
+        "dimension": 30.797636632200888,
         "children": [
           {
-            "id": "1532fc90d6d95910",
+            "id": "f661a945f3d2d8c9",
             "type": "leaf",
             "state": {
               "type": "outline",
@@ -43,8 +42,7 @@
               },
               "icon": "lucide-list",
               "title": "README 的大纲"
-            },
-            "group": "d4129a4af076829b"
+            }
           }
         ]
       }
@@ -103,7 +101,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 299.5
   },
   "right": {
     "id": "398b44a4cb8f1e89",
@@ -208,18 +206,23 @@
       "bases:新建数据库": false
     }
   },
-  "active": "02c3566f4d7a7ea6",
+  "active": "df0a0fe02aaf5847",
   "lastOpenFiles": [
-    "c355716e-797e-49f8-b254-c0f48b6c8ba3.png",
+    "assets/tui1.png",
     "README.md",
-    "Pasted image 20260313215804.png",
-    "Pasted image 20260313215136.png",
-    "Pasted image 20260313214903.png",
-    "Pasted image 20260313210927.png",
-    "Pasted image 20260313210219.png",
-    "Pasted image 20260313210831.png",
-    "Pasted image 20260313210515.png",
-    "Pasted image 20260313210308.png",
-    "Pasted image 20260313205857.png"
+    "assets/ag0.png",
+    "assets/wx1.png",
+    "assets/wx2.png",
+    "assets/ag1.png",
+    "assets/ag2.png",
+    "openclaw.json.md",
+    "openclaw.json",
+    "assets/sk8.png",
+    "assets/sk2.png",
+    "assets/ag3.png",
+    "assets/tui4.png",
+    "assets/wx3.png",
+    "assets/img",
+    "assets"
   ]
 }

@@ -1,0 +1,672 @@
+{
+  // 元信息
+  "meta": {
+    "lastTouchedVersion": "2026.3.23-2",
+    "lastTouchedAt": "2026-03-26T03:50:01.895Z"
+  },
+  // 环境变量信息
+  "env": {
+    "shellEnv": {
+      "enabled": true
+    },
+    "vars": {
+      "TAVILY_API_KEY": "xxxxxx",
+      "SEARXNG_URL": "http://192.168.5.19:4000",
+      "xx":"xx"
+    }
+  },
+  // 运行向导记录
+  "wizard": {
+    "lastRunAt": "2026-03-25T09:48:03.489Z",
+    "lastRunVersion": "2026.3.2",
+    "lastRunCommand": "doctor",
+    "lastRunMode": "local"
+  },
+  "browser": {
+    "attachOnly": false
+  },
+  // 认证信息
+  "auth": {
+    // 各个模型的配置信息
+    "profiles": {
+      "minimax:default": {
+        "provider": "minimax",
+        "mode": "api_key"
+      },
+      "minimax-cn:default": {
+        "provider": "minimax-cn",
+        "mode": "api_key"
+      },
+      "kimi-coding:default": {
+        "provider": "kimi-coding",
+        "mode": "api_key"
+      }
+    }
+  },
+  // ACP协议配置 可以控制连接不在openclaw范围内的Agent
+  "acp": {
+    "enabled": true,
+    "dispatch": {
+      "enabled": true
+    },
+    "backend": "acpx",
+    "defaultAgent": "claude",
+    "allowedAgents": [
+      "pi",
+      "claude",
+      "codex",
+      "opencode",
+      "gemini"
+    ],
+    "maxConcurrentSessions": 8
+  },
+  // 模型配置信息
+  "models": {
+    "mode": "merge", 
+    "providers": {
+      "minimax-cn": {
+        "baseUrl": "https://api.minimaxi.com/anthropic",
+        "apiKey": "xxxxx",
+        "api": "anthropic-messages",
+        "models": [
+          {
+            "id": "MiniMax-M2.5-highspeed",
+            "name": "MiniMax-M2.5-highspeed",
+            "api": "anthropic-messages",
+            "reasoning": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0.3,
+              "output": 1.2,
+              "cacheRead": 0.03,
+              "cacheWrite": 0.12
+            },
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          },
+          {
+            "id": "MiniMax-M2.7",
+            "name": "MiniMax-M2.7",
+            "api": "anthropic-messages",
+            "reasoning": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0.3,
+              "output": 1.2,
+              "cacheRead": 0.03,
+              "cacheWrite": 0.12
+            },
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          }
+        ]
+      },
+      "kimi-coding": {
+        "baseUrl": "https://api.kimi.com/coding/",
+        "api": "anthropic-messages",
+        "models": [
+          {
+            "id": "k2p5",
+            "name": "Kimi for Coding",
+            "reasoning": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 262144,
+            "maxTokens": 32768
+          }
+        ]
+      }
+    }
+  },
+  // Agent定义
+  "agents": {
+    // 全局默认配置模版 可以被继承
+    "defaults": {
+      "model": {
+          // 优先使用哪个模型
+        "primary": "kimi-coding/k2p5"
+      },
+      // 可用模型
+      "models": {
+        "minimax/MiniMax-M2.5": {
+          "alias": "Minimax"
+        },
+        "minimax-cn/MiniMax-M2.5": {
+          "alias": "Minimax"
+        },
+        "kimi-coding/k2p5": {
+          "alias": "Kimi for Coding"
+        }
+      },
+      // 工作目录
+      "workspace": "/home/guantou/.openclaw/workspace",
+      // 大模型的上下文窗口（Token）是有限的，聊得太长会爆满。`safeguard`（安全卫士）模式意味着当对话快达到 Token 上限时，OpenClaw 会自动对前面的聊天记录进行摘要、折叠或清理，保证新消息能正常发出去而不报错。
+      "compaction": {
+        "mode": "safeguard"
+      },
+      // 心跳时间间隔
+      "heartbeat": {
+        "every": "10m"
+      },
+      // 使用这个Agent最多并发多少会话
+      "maxConcurrent": 4,
+      // 调用子Agent的并发数量
+      "subagents": {
+        "maxConcurrent": 8
+      }
+    },
+    // 子Agent列表
+    "list": [
+      {
+        "id": "main",
+        "tools": {
+          "profile": "full", // 权限级别为全部
+          "alsoAllow": [
+            "feishu_bitable_app",
+            "feishu_bitable_app_table",
+            "feishu_bitable_app_table_field",
+            "feishu_bitable_app_table_record",
+            "feishu_bitable_app_table_view",
+            "feishu_calendar_calendar",
+            "feishu_calendar_event",
+            "feishu_calendar_event_attendee",
+            "feishu_calendar_freebusy",
+            "feishu_chat",
+            "feishu_chat_members",
+            "feishu_create_doc",
+            "feishu_doc_comments",
+            "feishu_doc_media",
+            "feishu_drive_file",
+            "feishu_fetch_doc",
+            "feishu_get_user",
+            "feishu_im_bot_image",
+            "feishu_im_user_fetch_resource",
+            "feishu_im_user_get_messages",
+            "feishu_im_user_get_thread_messages",
+            "feishu_im_user_message",
+            "feishu_im_user_search_messages",
+            "feishu_oauth",
+            "feishu_oauth_batch_auth",
+            "feishu_search_doc_wiki",
+            "feishu_search_user",
+            "feishu_sheet",
+            "feishu_task_comment",
+            "feishu_task_subtask",
+            "feishu_task_task",
+            "feishu_task_tasklist",
+            "feishu_update_doc",
+            "feishu_wiki_space",
+            "feishu_wiki_space_node"
+          ],
+          "deny": [
+            "web_search",
+            "web_fetch"
+          ]
+        }
+      },
+      {
+        "id": "video-cut",
+        "name": "video-cut",
+        "workspace": "/home/guantou/.openclaw/workspace-video-cut",
+        "agentDir": "/home/guantou/.openclaw/agents/video-cut/agent",
+        "tools": {
+          "alsoAllow": [
+            "group:runtime",
+            "feishu_bitable_app",
+            "feishu_bitable_app_table",
+            "feishu_bitable_app_table_field",
+            "feishu_bitable_app_table_record",
+            "feishu_bitable_app_table_view",
+            "feishu_calendar_calendar",
+            "feishu_calendar_event",
+            "feishu_calendar_event_attendee",
+            "feishu_calendar_freebusy",
+            "feishu_chat",
+            "feishu_chat_members",
+            "feishu_create_doc",
+            "feishu_doc_comments",
+            "feishu_doc_media",
+            "feishu_drive_file",
+            "feishu_fetch_doc",
+            "feishu_get_user",
+            "feishu_im_bot_image",
+            "feishu_im_user_fetch_resource",
+            "feishu_im_user_get_messages",
+            "feishu_im_user_get_thread_messages",
+            "feishu_im_user_message",
+            "feishu_im_user_search_messages",
+            "feishu_oauth",
+            "feishu_oauth_batch_auth",
+            "feishu_search_doc_wiki",
+            "feishu_search_user",
+            "feishu_sheet",
+            "feishu_task_comment",
+            "feishu_task_subtask",
+            "feishu_task_task",
+            "feishu_task_tasklist",
+            "feishu_update_doc",
+            "feishu_wiki_space",
+            "feishu_wiki_space_node"
+          ],
+          "deny": [
+            "group:web",
+            "group:fs"
+          ]
+        }
+      },
+      {
+        "id": "claude-code",
+        "name": "claude-code",
+        "workspace": "/home/guantou/.openclaw/workspace-claude-code",
+        "agentDir": "/home/guantou/.openclaw/agents/claude-code/agent",
+        "model": "kimi-coding/k2p5",
+        "tools": {
+          "alsoAllow": [*]
+        },
+        // ACP类型的Agent
+        "runtime": {
+          "type": "acp",
+          "acp": {
+            "agent": "claude",
+            "backend": "acpx",
+            "mode": "persistent"
+          }
+        }
+      },
+      {
+        "id": "recruiter",
+        "name": "recruiter",
+        "workspace": "/home/guantou/.openclaw/workspace-recruiter",
+        "agentDir": "/home/guantou/.openclaw/agents/recruiter/agent",
+        "tools": {
+          "alsoAllow": [
+            "feishu_bitable_app",
+            "feishu_bitable_app_table",
+            "feishu_bitable_app_table_field",
+            "feishu_bitable_app_table_record",
+            "feishu_bitable_app_table_view",
+            "feishu_calendar_calendar",
+            "feishu_calendar_event",
+            "feishu_calendar_event_attendee",
+            "feishu_calendar_freebusy",
+            "feishu_chat",
+            "feishu_chat_members",
+            "feishu_create_doc",
+            "feishu_doc_comments",
+            "feishu_doc_media",
+            "feishu_drive_file",
+            "feishu_fetch_doc",
+            "feishu_get_user",
+            "feishu_im_bot_image",
+            "feishu_im_user_fetch_resource",
+            "feishu_im_user_get_messages",
+            "feishu_im_user_get_thread_messages",
+            "feishu_im_user_message",
+            "feishu_im_user_search_messages",
+            "feishu_oauth",
+            "feishu_oauth_batch_auth",
+            "feishu_search_doc_wiki",
+            "feishu_search_user",
+            "feishu_sheet",
+            "feishu_task_comment",
+            "feishu_task_subtask",
+            "feishu_task_task",
+            "feishu_task_tasklist",
+            "feishu_update_doc",
+            "feishu_wiki_space",
+            "feishu_wiki_space_node"
+          ]
+        }
+      },
+      {
+        "id": "copywriter",
+        "name": "copywriter",
+        "workspace": "/home/guantou/.openclaw/workspace-copywriter",
+        "agentDir": "/home/guantou/.openclaw/agents/copywriter/agent",
+        "tools": {
+          "alsoAllow": [
+            "feishu_bitable_app",
+            "feishu_bitable_app_table",
+            "feishu_bitable_app_table_field",
+            "feishu_bitable_app_table_record",
+            "feishu_bitable_app_table_view",
+            "feishu_calendar_calendar",
+            "feishu_calendar_event",
+            "feishu_calendar_event_attendee",
+            "feishu_calendar_freebusy",
+            "feishu_chat",
+            "feishu_chat_members",
+            "feishu_create_doc",
+            "feishu_doc_comments",
+            "feishu_doc_media",
+            "feishu_drive_file",
+            "feishu_fetch_doc",
+            "feishu_get_user",
+            "feishu_im_bot_image",
+            "feishu_im_user_fetch_resource",
+            "feishu_im_user_get_messages",
+            "feishu_im_user_get_thread_messages",
+            "feishu_im_user_message",
+            "feishu_im_user_search_messages",
+            "feishu_oauth",
+            "feishu_oauth_batch_auth",
+            "feishu_search_doc_wiki",
+            "feishu_search_user",
+            "feishu_sheet",
+            "feishu_task_comment",
+            "feishu_task_subtask",
+            "feishu_task_task",
+            "feishu_task_tasklist",
+            "feishu_update_doc",
+            "feishu_wiki_space",
+            "feishu_wiki_space_node"
+          ]
+        }
+      },
+      {
+        "id": "product-manager",
+        "name": "product-manager",
+        "workspace": "/home/guantou/.openclaw/workspace-product-manager",
+        "agentDir": "/home/guantou/.openclaw/agents/product-manager/agent",
+        "tools": {
+          "alsoAllow": [
+            "feishu_bitable_app",
+            "feishu_bitable_app_table",
+            "feishu_bitable_app_table_field",
+            "feishu_bitable_app_table_record",
+            "feishu_bitable_app_table_view",
+            "feishu_calendar_calendar",
+            "feishu_calendar_event",
+            "feishu_calendar_event_attendee",
+            "feishu_calendar_freebusy",
+            "feishu_chat",
+            "feishu_chat_members",
+            "feishu_create_doc",
+            "feishu_doc_comments",
+            "feishu_doc_media",
+            "feishu_drive_file",
+            "feishu_fetch_doc",
+            "feishu_get_user",
+            "feishu_im_bot_image",
+            "feishu_im_user_fetch_resource",
+            "feishu_im_user_get_messages",
+            "feishu_im_user_get_thread_messages",
+            "feishu_im_user_message",
+            "feishu_im_user_search_messages",
+            "feishu_oauth",
+            "feishu_oauth_batch_auth",
+            "feishu_search_doc_wiki",
+            "feishu_search_user",
+            "feishu_sheet",
+            "feishu_task_comment",
+            "feishu_task_subtask",
+            "feishu_task_task",
+            "feishu_task_tasklist",
+            "feishu_update_doc",
+            "feishu_wiki_space",
+            "feishu_wiki_space_node"
+          ]
+        }
+      },
+      // 还有很多子Agent 配置都差不多 先不列了
+    ]
+  },
+  // 默认工具使用权限 这里设置的都是full
+  "tools": {
+    "profile": "full"
+  },
+  // ⭐️ 会话绑定！！
+  "bindings": [
+      // 飞书机器人绑定 AgentId对应上面的子AgentId
+      // channel选择飞书
+      // accountId对应下面的飞书机器人的accountId
+    {
+      "agentId": "copywriter",
+      "match": {
+        "channel": "feishu",
+        "accountId": "postwriter"
+      }
+    },
+    {
+      "agentId": "ops-monitor",
+      "match": {
+        "channel": "feishu",
+        "accountId": "devops"
+      }
+    },
+    // 飞书群聊绑定 AgentId对应上面的子AgentId
+    // peer.kind 为group 标识群聊渠道
+    // peer.id 标识你需要把Agent绑定到哪个群聊 
+    {
+      "agentId": "recruiter",
+      "match": {
+        "channel": "feishu",
+        "peer": {
+          "kind": "group",
+          "id": "oc_d327c72f3bbd38ba6707afce5a73109b"
+        }
+      }
+    },
+    {
+      "agentId": "copywriter",
+      "match": {
+        "channel": "feishu",
+        "peer": {
+          "kind": "group",
+          "id": "oc_1e1977a0053a86eba1d7211f387f5be2"
+        }
+      }
+    },
+    {
+      "agentId": "product-manager",
+      "match": {
+        "channel": "feishu",
+        "peer": {
+          "kind": "group",
+          "id": "oc_866a40a31dd7005cecbb13e478cfe20d"
+        }
+      }
+    },
+    // 后面还有很多 不列了。。。
+  ],
+  // 意思是你发了消息之后 是否使用一个小表情告诉你他正在处理 这里是默认值 群聊中艾特或者私聊的时候 你的消息上都会出现回复表情
+  "messages": {
+    "ackReactionScope": "group-mentions"
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  // 会话隔离机制
+  "session": {
+      // 为每一个 [机器人账号] + [接入渠道] + [对方用户] 生成一个独立的会话上下文
+    "dmScope": "per-account-channel-peer"
+  },
+  "hooks": {
+    "internal": {
+      "enabled": true,
+      "entries": {
+        "session-memory": {
+          "enabled": true
+        },
+        "command-logger": {
+          "enabled": true
+        },
+        "bootstrap-extra-files": {
+          "enabled": true
+        },
+        "boot-md": {
+          "enabled": true
+        }
+      }
+    }
+  },
+  "channels": {
+    "feishu": {
+      "enabled": true,
+      "appId": "cli_a915a37896b8dbd7",
+      "appSecret": "xxxxx",
+      "domain": "feishu",
+      "requireMention": false,
+      "footer": {
+        "elapsed": true,
+        "status": true
+      },
+      "streaming": true,
+      "threadSession": true,
+      "groups": {
+        "*": {
+          "requireMention": false,
+          "groupPolicy": "open"
+        }
+      },
+      "accounts": {
+       // 多账户绑定 下面的每个键都对应上面binding里的Agent才行
+        "whetherbot": {
+          "appId": "cli_a93ff5a011381bcd",
+          "appSecret": "xxxxx",
+          "botName": "真天气助手",
+          "dmPolicy": "open",
+          "allowFrom": [
+            "*"
+          ],
+          "enabled": true
+        },
+        "devops": {
+          "appId": "cli_a93ce0d904b8dbde",
+          "appSecret": "xxxxx",
+          "botName": "运维助手",
+          "dmPolicy": "open",
+          "allowFrom": [
+            "*"
+          ],
+          "enabled": true
+        },
+        "postwriter": {
+          "appId": "cli_a93cd11ed679dbd9",
+          "appSecret": "xxxxx",
+          "botName": "真文案助手",
+          "dmPolicy": "open",
+          "allowFrom": [
+            "*"
+          ],
+          "enabled": true
+        },
+        "default": {
+          "groupPolicy": "open",
+          "dmPolicy": "open",
+          "allowFrom": [
+            "*"
+          ]
+        }
+      },
+      "groupPolicy": "open", // 群聊权限 任何机器人被拉入任何群都可以对话
+      "replyMode": {
+        "group": "streaming",
+        "direct": "streaming"
+      }
+    }
+  },
+  // 网关配置
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "lan", // 是否可以外部访问
+    "controlUi": {
+      "enabled": true,
+      // 外部访问必须要开的设置
+      "allowedOrigins": [
+        "*"
+      ],
+      "dangerouslyAllowHostHeaderOriginFallback": true,
+      "allowInsecureAuth": true,
+      "dangerouslyDisableDeviceAuth": true
+    },
+    // 访问秘钥
+    "auth": {
+      "mode": "token",
+      "token": "xxxxxx"
+    },
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    },
+    "reload": {
+      "mode": "hot"
+    }
+  },
+  "skills": {
+    "install": {
+      "nodeManager": "npm"
+    },
+    // skill中如果有需要配置参数的 可以在这里配置
+    "entries": {
+      "minimax-search": {
+        "enabled": true,
+        "apiKey": "xxx"
+      },
+      "searxng": {
+        "enabled": true,
+        "env": {
+          "SEARXNG_URL": "http://192.168.2.1:4000"
+        }
+      }
+    }
+  },
+  "plugins": {
+    "allow": [
+      "acpx",
+      "openclaw-lark"
+    ],
+    "load": {
+      "paths": [
+        "/home/guantou/.nvm/versions/node/v24.14.0/lib/node_modules/openclaw/dist/extensions/acpx"
+      ]
+    },
+    "entries": {
+      "acpx": {
+        "enabled": true,
+        "config": {
+          "permissionMode": "approve-all",
+          "nonInteractivePermissions": "deny"
+        }
+      },
+      "openclaw-lark": {
+        "enabled": true
+      }
+    },
+    // 安装的插件都在这里
+    "installs": {
+      "acpx": {
+        "source": "path",
+        "spec": "acpx",
+        "sourcePath": "/home/guantou/.nvm/versions/node/v24.14.0/lib/node_modules/openclaw/dist/extensions/acpx",
+        "installPath": "/home/guantou/.nvm/versions/node/v24.14.0/lib/node_modules/openclaw/dist/extensions/acpx",
+        "installedAt": "2026-03-25T14:04:10.887Z"
+      },
+      "openclaw-lark": {
+        "source": "archive",
+        "sourcePath": "/tmp/openclaw-lark-dU1Gxd/larksuite-openclaw-lark-2026.3.25.tgz",
+        "installPath": "/home/guantou/.openclaw/extensions/openclaw-lark",
+        "version": "2026.3.25",
+        "installedAt": "2026-03-25T13:59:56.040Z"
+      }
+    }
+  }
+}
