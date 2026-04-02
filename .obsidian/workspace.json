@@ -101,7 +101,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 299.5
+    "width": 297.5
   },
   "right": {
     "id": "398b44a4cb8f1e89",
@@ -208,6 +208,10 @@
   },
   "active": "df0a0fe02aaf5847",
   "lastOpenFiles": [
+    "assets/acp2.png",
+    "assets/acp3.png",
+    "assets/acp4.png",
+    "assets/acp1.png",
     "assets/tui1.png",
     "README.md",
     "assets/ag0.png",
@@ -218,10 +222,6 @@
     "openclaw.json.md",
     "openclaw.json",
     "assets/sk8.png",
-    "assets/sk2.png",
-    "assets/ag3.png",
-    "assets/tui4.png",
-    "assets/wx3.png",
     "assets/img",
     "assets"
   ]
