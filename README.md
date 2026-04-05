@@ -719,7 +719,7 @@ openclaw dashboard
 > 如果 onboard 时显示了带 token 的 URL（如 `http://127.0.0.1:18789/#token=xxxxx`），可以直接用该 URL 访问，无需手动输入 token。
 
 
-## 模型其他配置
+## 配置其他模型
 
 ### 配置MiniMax
 1.执行以下命令，进入 OpenClaw 模型配置界面
@@ -1039,6 +1039,25 @@ mcporter 0.7.3 — Listing 2 server(s) (per-server timeout: 30s)
 skills是由Anthropic提出，核心渐进式及加载，按需加载上下文内容（理解nodejs按需加载），而不是像mcp服务器将一堆指令和文档全部加载，会消耗跟多token；skills使用其中1-2个工具，加载token相对少于前者。
 Agent Skills官方文档：[Overview - Agent Skills](https://agentskills.io/home)
 介绍skills：[Agent Skills 完全指南](https://mp.weixin.qq.com/s/VQSRPTf5bOyA1bjS2JH5Kw?poc_token=HKIlxmmjtD3uw3nmJ6fJs4tM-ouP3sNZoDodr7JS)
+### 查看openclaw skills
+```bash
+openclaw skills list  # 列出可用技能
+openclaw skills info <名称> # 查看技能详情
+openclaw skills check # 检查技能依赖状态
+
+# 列出技能
+openclaw skills list
+
+# 只显示就绪的技能
+openclaw skills list --eligible
+
+# 查看详情
+openclaw skills info weather
+
+# 检查依赖
+openclaw skills check --verbose
+```
+
 ### 第一种：openclaw内置skills
 openclaw已经内置了多种skills，通过OpenClaw WebUI界面找到代理->选择skills，在skill过滤想要的技能，比如搜索weather天气skills，默认是启用enable这个skills。
 ![](./assets/sk1.png)
@@ -1328,15 +1347,87 @@ openclaw config set session.dmScope "per-account-channel-peer"
 8.飞书应用就可以看到新增独立的agent。
 ![](./assets/ag3.png)
 
+
+## opencalw中subagent的使用
+比如当前使用到批量任务、并发任务，可以用到opencalw中subagent子代理机制，一个主agent下面创建多个子subagent。子subagent不要自己配置，主agent会根据任务类型、任务难度，自动帮你派生子agent来完成任务。
+![](./assets/sub1.png)
+
+/subagents命令
+使用 `/subagents` 来检查或控制**当前会话**的子代理运行：
+- `/subagents list`
+- `/subagents stop <id|#|all>`
+- `/subagents log <id|#> [limit] [tools]`
+- `/subagents info <id|#>`
+- `/subagents send <id|#> <message>`
+`/subagents info` 显示运行元数据（状态、时间戳、会话 ID、记录路径、清理）。
+
+主要目标：
+- 并行化"研究/长任务/慢工具"工作，不阻塞主运行。
+- 默认保持子代理隔离（会话分离 + 可选沙箱）。
+- 保持工具表面难以误用：子代理默认**不**获取会话工具。
+- 避免嵌套：子代理不能生成子代理。
+
+`/subagent list`：查看最近子agent活动状态
+![](./assets/sub2.png)
+
+## 创建定时任务
+
+| 命令                             | 说明       |
+| ------------------------------ | -------- |
+| `openclaw cron status`         | 查看调度器状态  |
+| `openclaw cron list`           | 列出所有定时任务 |
+| `openclaw cron add`            | 添加定时任务   |
+| `openclaw cron edit <ID>`      | 编辑任务     |
+| `openclaw cron rm <ID>`        | 删除任务     |
+| `openclaw cron enable <ID>`    | 启用任务     |
+| `openclaw cron disable <ID>`   | 禁用任务     |
+| `openclaw cron run <ID>`       | 立即执行任务   |
+| `openclaw cron runs --id <ID>` | 查看执行历史   |
+
+```bash
+# 每天早上9点提醒
+openclaw cron add --name "早间提醒" --cron "0 9 * * *" --system-event "早安！新的一天开始了"
+
+# 工作日下班提醒
+openclaw cron add --name "下班提醒" --cron "0 18 * * 1-5" --system-event "该下班了，记得写日报"
+
+# 查看任务
+openclaw cron list
+```
+
+命令创建了一个一次性任务，在 2026-02-01 16:00 UTC 向主会话推送一条提醒，然后自动清理掉
+```bash
+openclaw cron add \
+  --name "Reminder" \   # 定时任务名称
+  --at "2026-02-01T16:00:00Z" \ # 设置运行时间（ISO 格式，Z = UTC）
+  --session main \ # 在哪个 session 执行（main = 主会话）
+  --system-event "Reminder: check the cron docs draft" \ # 触发一个系统事件，推送给主会话
+  --wake now \ # 唤醒模式：now = 立即唤醒处理，next-heartbeat = 等下次心跳
+  --delete-after-run  # 一次性任务，运行成功后自动删除
+```
+
+每天定时执行任务：每天18点生成一个整理一份今日必看（包含知乎、百度、今日头条、b站、微博、抖音）
+```bash
+openclaw cron add \
+  --name "每日必看" \
+  --cron "0 0 18 * * *" \
+  --tz "Asia/Shanghai" \
+  --session isolated \
+  --message "每天18点生成今日必看新闻摘要，来源：知乎、百度、今日头条、B站、微博、抖音" \
+  --channel feishu \
+  --to "oc_45efad14b3505839d7axxxx
+```
+或者直接自然语言，通过openclaw助手进行创建。
+![](./assets/cro1.png)
+
 ## 使用ACP操作Claudecode
-CP（Agent Client Protocol）是 OpenClaw 用于连接外部编程工具（如 Claude Code、Codex、OpenCode、Gemini CLI）的协议。通过 ACP，你可以在聊天中直接调用这些强大的代码工具来完成编程任务。[openclaw/acpx](https://github.com/openclaw/acpx)
+ACP（Agent Client Protocol）是 OpenClaw 用于连接外部编程工具（如 Claude Code、Codex、OpenCode、Gemini CLI）的协议。通过 ACP，你可以在聊天中直接调用这些强大的代码工具来完成编程任务。[openclaw/acpx](https://github.com/openclaw/acpx)
 ![](./assets/acp1.png)
 
 ### 安装acp
 ```bash
 openclaw plugins install acpx
 ```
-
 ### 添加acp配置
 在openclaw.json中添加以下配置
 核心配置 `acp.*`
@@ -1452,7 +1543,6 @@ openclaw会在后台运行一个claude code进程
 ![](./assets/acp4.png)
 
 创建会话`/acp spawn`
-
 ```Plain
 /acp steer [--session <session-key|session-id|session-label>] <instruction>
 
@@ -1562,8 +1652,8 @@ openclaw所有相关配置：`.openclaw/openclaw.json`
 	这部分定义 OpenClaw 智能体的默认使用规则，比如默认用哪个模型、哪些模型可以用（白名单）、模型的快捷别名。
 
 具体看openclaw.json配置文件
-
-安装完成后，以下是日常使用中最常用的 OpenClaw 命令：
+## OpenClaw常用命令
+安装完成后，以下是日常使用中最常用的 [OpenClaw 命令](https://linux.do/t/topic/1748901)：
 
 | 命令                                               | 功能               |
 | ------------------------------------------------ | ---------------- |
@@ -1585,6 +1675,54 @@ openclaw所有相关配置：`.openclaw/openclaw.json`
 | `openclaw hooks list`                            | 查看所有 Hooks       |
 | `openclaw hooks enable\|disable <name>`          | 启用、禁用指定 Hook     |
 
+### 初始化与配置
+```bash
+openclaw onboard --reset              # 重置后运行向导
+openclaw onboard --flow quickstart    # 快速开始模式
+openclaw onboard --flow advanced      # 高级模式
+openclaw onboard --gateway-port 18789 # 指定网关端口
+openclaw onboard --install-daemon     # 安装为系统服务
+```
+
+### Gateway 网关服务
+```bash
+openclaw gateway  # 启动 WebSocket 网关（前台运行）
+openclaw gateway status # 查看网关状态（默认探测 RPC）
+openclaw gateway start  # 启动网关服务（后台）
+openclaw gateway stop 停止网关服务
+openclaw gateway restart  重启网关服务
+openclaw gateway install  安装为系统服务
+openclaw gateway uninstall  卸载系统服务
+```
+### RPC 调用
+```bash
+openclaw gateway call <方法> [--params '<JSON>']   # 调用 RPC 方法
+openclaw gateway health                           # 获取健康状态
+openclaw gateway probe                            # 探测网关
+openclaw gateway discover                         # 发现网关
+```
+### 插件管理（plugins）
+
+```bash
+# 列出插件
+openclaw plugins list
+
+# 查看插件详情
+openclaw plugins info <plugins_name>
+
+# 安装插件
+openclaw plugins install <plugins_name>
+
+# 启用插件（需重启Gateway）
+openclaw plugins enable <plugins_name>
+
+# 禁用插件
+openclaw plugins disable <plugins_name>
+
+# 插件诊断
+openclaw plugins doctor
+```
+
 ### 修改配置
 ```bash
 # 添加或更新配置项
@@ -1596,7 +1734,37 @@ openclaw config get agents
 # 验证配置文件
 openclaw doctor
 ```
+### 配置管理
+```bash
+openclaw config 启动配置向导（无子命令时）
+openclaw config get <路径>  获取配置值
+openclaw config set <路径> <值>  设置配置值
+openclaw config unset <路径>  删除配置值
+openclaw config file  显示配置文件路径
+openclaw config validate  验证配置
+```
 
+```bash
+# 获取配置
+openclaw config get agents.defaults.model.primary
+openclaw config get gateway.port
+openclaw config get channels.telegram.accounts.default.token
+
+# 添加或更新配置项
+openclaw config set agents[0].model "anthropic/claude-opus-4-20250514"
+openclaw config set gateway.port 18789
+
+# 删除配置
+openclaw config unset agents.defaults.thinking
+
+agents.defaults.model.primary       # 主模型
+agents.defaults.thinking            # 思考模式
+agents.defaults.timeoutSeconds      # 超时时间
+gateway.port                        # 网关端口
+gateway.auth.token                  # 网关令牌
+channels.feishu.enabled             # feishu 启用状态
+```
+ 
 ### 查看日志
 
 ```bash
@@ -1614,8 +1782,61 @@ openclaw logs --plain          # 纯文本输`
 | **审计日志** | `~/.openclaw/logs/config-audit.jsonl`      | 配置变更记录                   |
 其中 **运行日志** 是大头，包含了飞书插件加载、Gateway 启停、消息收发等所有运行时信息。
 
+### 安全与诊断
+
+安全审计
+```bash
+openclaw security audit              # 基本审计
+openclaw security audit --deep       # 深度审计（包括网关探测）
+openclaw security audit --fix        # 自动修复安全问题
+```
+
+健康检查
+```bash
+openclaw health                      # 获取网关健康状态
+openclaw health --json               # JSON 输出
+openclaw doctor                      # 快速诊断
+openclaw doctor --deep               # 深度诊断
+openclaw doctor --yes                # 自动接受默认修复
+```
+
+密钥管理
+```bash
+openclaw secrets reload              # 重新加载密钥引用
+openclaw secrets audit               # 审计密钥安全
+```
+
+### 更新与维护
+更新
+```bash
+openclaw update                      # 更新 OpenClaw
+openclaw update --check              # 检查更新
+```
+备份
+```bash
+openclaw backup create               # 创建备份
+openclaw backup verify <文件>        # 验证备份
+```
+重置
+```bash
+openclaw reset                       # 重置配置（保留 CLI）
+openclaw reset --scope config        # 只重置配置
+openclaw reset --scope config+creds+sessions  # 重置配置+凭证+会话
+openclaw reset --scope full          # 完全重置
+```
+卸载
+```bash
+openclaw uninstall                   # 卸载网关服务和数据
+openclaw uninstall --all             # 完全卸载
+```
+
+学习教程：
+[【OpenClaw】全网最详细安装与使用基础教程](https://www.bilibili.com/video/BV1DtNczDEyR?spm_id_from=333.788.videopod.sections&vd_source=c1080d219d1f81326f0064a8647d7355)
+[【OpenClaw】 多Agent架构详解，为什么你必须用“AI团队”？](https://www.bilibili.com/video/BV1f6AAzYEMU/?spm_id_from=333.1387.homepage.video_card.click&vd_source=c1080d219d1f81326f0064a8647d7355)
+[【OpenClaw】手把手叫你打造属于你的AI团队!](https://www.bilibili.com/video/BV1yXXQBpEaE/?spm_id_from=333.1387.homepage.video_card.click&vd_source=c1080d219d1f81326f0064a8647d7355)
 
 参考：https://mp.weixin.qq.com/s/0Xq9XOfTjnQYwqXOVe9rZg
+https://linux.do/t/topic/1748901
 https://cloud.tencent.com/developer/article/2624973
 [Windows快速部署OpenClaw + Qwen3.5 Plus完整教程 – 大绵羊博客](https://dmyblog.cn/3009.html)
 [OpenClaw 全流程部署指南 - 晚安的静谧小屋](https://blog.goodnightan.com/posts/openclaw-install/)
